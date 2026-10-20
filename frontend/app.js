@@ -1637,7 +1637,7 @@ async function handleQuickExportSubgenre(subgenre) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         subgenres: [subgenre],
-        playlist_prefix: elements.inputPlaylistPrefix.value || 'SoundSort: '
+        playlist_prefix: elements.inputPlaylistPrefix.value || 'SS: '
       })
     });
     const data = await res.json();
@@ -1794,7 +1794,7 @@ async function handleStartSync() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         subgenres: selectedSubgenres,
-        playlist_prefix: elements.inputPlaylistPrefix.value || 'SoundSort: '
+        playlist_prefix: elements.inputPlaylistPrefix.value || 'SS: '
       })
     });
 

@@ -34,7 +34,7 @@ class TrackItem(BaseModel):
 class AppSettings(BaseModel):
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.7-flash"
-    playlist_prefix: str = "SoundSort: "
+    playlist_prefix: str = "SS: "
     ytmusic_is_connected: bool = False
 
 def get_settings() -> AppSettings:

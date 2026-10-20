@@ -415,7 +415,7 @@ def api_sync_ytmusic(req: SyncRequest):
         raise HTTPException(status_code=400, detail="Please select at least one subgenre to sync.")
 
     settings = get_settings()
-    prefix = req.playlist_prefix or settings.playlist_prefix or "SoundSort: "
+    prefix = req.playlist_prefix or settings.playlist_prefix or "SS: "
 
     all_tracks = get_all_tracks()
     sync_results = []

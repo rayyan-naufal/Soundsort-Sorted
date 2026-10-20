@@ -215,7 +215,7 @@ class YTMusicSyncService:
         self, 
         subgenre_name: str, 
         tracks: List[TrackItem], 
-        playlist_prefix: str = "SoundSort: "
+        playlist_prefix: str = "SS: "
     ) -> Dict[str, Any]:
         """
         Syncs all tracks belonging to a subgenre into a YouTube Music playlist.

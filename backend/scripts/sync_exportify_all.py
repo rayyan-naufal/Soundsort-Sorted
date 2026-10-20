@@ -73,7 +73,7 @@ def process_csv_file(
     search_pool: ThreadPoolExecutor
 ) -> Dict[str, Any]:
     file_basename = os.path.splitext(os.path.basename(csv_path))[0]
-    playlist_title = f"Soundsort : {file_basename}"
+    playlist_title = f"SS: {file_basename}"
     
     logger.info(f"\n{'='*60}\nProcessing file: {os.path.basename(csv_path)} -> '{playlist_title}'\n{'='*60}")
     
