@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SoundSort AI — Multi-Source Music Sorter & YT Music Creator</title>
-  <meta name="description" content="Aggregate music tracks from Spotify, SoundCloud, and YouTube, classify them into granular sub-genres with AI, fine-tune them visually, and sync directly to YouTube Music.">
+  <title>SoundSort AI — Next-Gen Music Sorter & YouTube Music Studio</title>
+  <meta name="description" content="AI-Powered multi-source music organizer and synchronizer for YouTube Music. Organizes your Spotify, SoundCloud, and YouTube tracks with Gemini AI.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,20 +16,33 @@
     <!-- Top Navigation Header -->
     <header class="app-header">
       <div class="brand">
-        <div class="logo-icon">
+        <div class="logo-icon" title="SoundSort AI Audio Engine">
           <span class="pulse-bar bar-1"></span>
           <span class="pulse-bar bar-2"></span>
           <span class="pulse-bar bar-3"></span>
           <span class="pulse-bar bar-4"></span>
         </div>
         <div class="brand-text">
-          <h1>SoundSort <span class="badge-ai">AI</span></h1>
-          <p class="subtitle">Multi-Source Genre Sorter &bull; YouTube Music Sync</p>
+          <h1>SoundSort <span class="badge-ai">AI 3.7</span></h1>
+          <p class="subtitle">Multi-Source Genre Sorter &bull; YouTube Music Sync Studio</p>
         </div>
+        <!-- Realtime Audio Visualizer Canvas -->
+        <canvas id="audioVisualizerCanvas" class="header-visualizer" width="84" height="24" title="Live Visualizer"></canvas>
       </div>
 
-      <!-- Quick Status Indicators -->
+      <!-- Quick Status Indicators & Utility Nav -->
       <div class="header-status-bar">
+        <button id="btnToggleSound" class="btn btn-secondary btn-icon" title="Toggle UI Sound Effects (S)" aria-label="Toggle Sound">
+          <span id="soundIcon">🔊</span>
+        </button>
+        <button id="btnOpenShortcuts" class="btn btn-secondary btn-icon" title="Keyboard Shortcuts (?)" aria-label="Keyboard Shortcuts">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6" y2="8"/><line x1="10" y1="8" x2="10" y2="8"/><line x1="14" y1="8" x2="14" y2="8"/><line x1="18" y1="8" x2="18" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="6" y1="16" x2="18" y2="16"/></svg>
+        </button>
+        <button id="btnToggleInsights" class="btn btn-secondary btn-sm" title="Library Insights & Vibe Radar (I)">
+          <span class="insights-sparkle">📊</span>
+          <span>Insights</span>
+        </button>
+        
         <div class="status-chip" id="geminiStatusChip" title="Gemini AI Status">
           <span class="status-dot dot-offline"></span>
           <span class="chip-label">Gemini AI</span>
@@ -38,7 +51,7 @@
           <span class="status-dot dot-offline"></span>
           <span class="chip-label">YT Music</span>
         </div>
-        <button id="btnOpenSettings" class="btn btn-secondary btn-icon" title="Settings & Auth">
+        <button id="btnOpenSettings" class="btn btn-secondary btn-icon" title="Settings & Auth (Ctrl+,)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           <span>Settings</span>
         </button>
@@ -52,47 +65,61 @@
       <section class="control-grid">
         
         <!-- Box 1: Multi-source Importer -->
-        <div class="glass-panel importer-panel">
+        <div class="glass-panel importer-panel" id="importerPanel">
           <div class="panel-header">
             <div class="panel-title-group">
               <span class="step-num">1</span>
               <div>
-                <h2>Import Sources</h2>
-                <p class="panel-desc">Paste Spotify, SoundCloud, YouTube links or text lists</p>
+                <h2>Import Music</h2>
+                <p class="panel-desc">Paste Spotify, SoundCloud, YT links, text lists or drop CSV</p>
               </div>
             </div>
-            <div class="source-badges">
-              <span class="badge badge-csv">📁 CSV File</span>
-              <span class="badge badge-spotify">Spotify</span>
-              <span class="badge badge-soundcloud">SoundCloud</span>
-              <span class="badge badge-yt">YT Music</span>
-              <span class="badge badge-text">Text</span>
+            <div class="source-badges" id="sourceBadgesContainer">
+              <span class="badge badge-csv badge-interactive" data-source="csv" title="Upload Exportify or Spotify CSV">📁 CSV</span>
+              <span class="badge badge-spotify badge-interactive" data-source="spotify" title="Paste Spotify playlist or track links">Spotify</span>
+              <span class="badge badge-soundcloud badge-interactive" data-source="soundcloud" title="Paste SoundCloud sets or tracks">SoundCloud</span>
+              <span class="badge badge-yt badge-interactive" data-source="yt" title="Import YouTube Music likes or links">YT Music</span>
+              <span class="badge badge-text badge-interactive" data-source="text" title="Paste plain Artist - Title list">Text</span>
             </div>
           </div>
 
           <div class="importer-body">
             <input type="file" id="fileUploadInput" accept=".csv,.txt" style="display: none;">
-            <textarea id="importInput" placeholder="Paste links, text, or drop/upload a CSV file:
+            
+            <div class="dropzone-wrapper" id="dropzoneWrapper">
+              <textarea id="importInput" placeholder="Paste links, text, or drop a CSV file here:
 https://open.spotify.com/playlist/...
 https://soundcloud.com/artist/sets/...
 Skrillex & Fred again.. - Rumble
 Overmono - Good Lies" rows="4"></textarea>
+              <div class="drop-overlay hidden" id="dropOverlay">
+                <div class="drop-overlay-content">
+                  <div class="drop-icon">📥</div>
+                  <div class="drop-text">Drop CSV or Text file to import!</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="importer-sub-bar">
+              <span class="import-counter-hint" id="importCounterHint">0 tracks detected in input</span>
+              <span class="shortcut-tag">Ctrl + Enter to Import</span>
+            </div>
             
             <div class="importer-actions">
               <div class="quick-helpers">
-                <button id="btnUploadCsv" class="btn btn-secondary btn-sm" title="Upload Exportify or Spotify CSV">
+                <button id="btnUploadCsv" class="btn btn-secondary btn-sm" title="Upload Exportify or Spotify CSV file">
                   📁 Upload CSV
                 </button>
                 <button id="btnImportYtLikes" class="btn btn-secondary btn-sm" title="Import Liked Songs directly from your connected YouTube Music account">
                   ❤️ YT Music Likes
                 </button>
-                <button id="btnLoadSample" class="btn btn-ghost btn-sm" title="Try demo sample data">
+                <button id="btnLoadSample" class="btn btn-ghost btn-sm" title="Try demo sample data with modern genres">
                   ✨ Demo
                 </button>
               </div>
               <div class="action-right">
-                <button id="btnClearTracks" class="btn btn-outline-danger btn-sm">Clear All</button>
-                <button id="btnImport" class="btn btn-primary">
+                <button id="btnClearTracks" class="btn btn-outline-danger btn-sm" title="Remove all tracks from current session">Clear All</button>
+                <button id="btnImport" class="btn btn-primary" title="Extract songs from input (Ctrl+Enter)">
                   <span class="spinner hidden" id="importSpinner"></span>
                   <span>📥 Extract & Import</span>
                 </button>
@@ -102,36 +129,45 @@ Overmono - Good Lies" rows="4"></textarea>
         </div>
 
         <!-- Box 2: AI Genre Classifier Hub -->
-        <div class="glass-panel ai-panel">
+        <div class="glass-panel ai-panel" id="aiPanel">
           <div class="panel-header">
             <div class="panel-title-group">
               <span class="step-num">2</span>
               <div>
                 <h2>AI Sub-genre Engine</h2>
-                <p class="panel-desc">Automatic intelligent genre & vibe categorization</p>
+                <p class="panel-desc">Multi-tiered sub-genre & vibe intelligence</p>
               </div>
             </div>
-            <div class="ai-model-tag" id="activeModelTag">Gemini 2.5 Flash</div>
+            <div class="ai-model-tag" id="activeModelTag" title="Click to view/change model in Settings">Gemini 3.7 Flash</div>
           </div>
 
           <div class="ai-body">
             <div class="stats-overview">
-              <div class="stat-card">
+              <div class="stat-card" id="cardTotalTracks">
+                <div class="stat-icon-row"><span class="stat-dot-indicator dot-cyan"></span><span class="stat-lbl">Total Songs</span></div>
                 <span class="stat-val" id="statTotalTracks">0</span>
-                <span class="stat-lbl">Total Songs</span>
               </div>
-              <div class="stat-card">
+              <div class="stat-card" id="cardClassified">
+                <div class="stat-icon-row"><span class="stat-dot-indicator dot-purple"></span><span class="stat-lbl">Classified</span></div>
                 <span class="stat-val" id="statClassified">0</span>
-                <span class="stat-lbl">Classified</span>
+                <span class="stat-sub-val" id="statClassifiedPct">0%</span>
               </div>
-              <div class="stat-card">
+              <div class="stat-card" id="cardSubgenres">
+                <div class="stat-icon-row"><span class="stat-dot-indicator dot-pink"></span><span class="stat-lbl">Sub-genres</span></div>
                 <span class="stat-val" id="statSubgenres">0</span>
-                <span class="stat-lbl">Sub-genres</span>
               </div>
-              <div class="stat-card">
+              <div class="stat-card" id="cardSynced">
+                <div class="stat-icon-row"><span class="stat-dot-indicator dot-green"></span><span class="stat-lbl">Synced</span></div>
                 <span class="stat-val" id="statSynced">0</span>
-                <span class="stat-lbl">Synced</span>
+                <span class="stat-sub-val" id="statSyncedPct">0%</span>
               </div>
+            </div>
+
+            <!-- Live Streaming Classification Ticker -->
+            <div class="ai-live-ticker hidden" id="aiLiveTicker">
+              <div class="ticker-pulse"></div>
+              <div class="ticker-label">STREAMING:</div>
+              <div class="ticker-content" id="aiLiveTickerText">Analyzing sonic spectrum...</div>
             </div>
 
             <div class="ai-actions">
@@ -143,14 +179,17 @@ Overmono - Good Lies" rows="4"></textarea>
                 <div class="progress-bar-wrapper">
                   <div class="progress-bar-fill progress-bar-neon" id="aiProgressBarFill" style="width: 0%;"></div>
                 </div>
-                <div class="progress-current-batch" id="aiProgressSubtext">0 / 0 tracks analyzed</div>
+                <div class="progress-footer-row">
+                  <span class="progress-subtext" id="aiProgressSubtext">0 / 0 tracks analyzed</span>
+                  <span class="progress-eta" id="aiProgressEta">⚡ Fast Mode</span>
+                </div>
               </div>
 
               <div class="classify-options-row">
                 <label class="checkbox-container">
                   <input type="checkbox" id="chkOnlyUncategorized" checked>
                   <span class="checkmark"></span>
-                  <span class="checkbox-text">⚡ Hanya klasifikasikan lagu yang belum selesai (Skip yang sudah ada subgenre)</span>
+                  <span class="checkbox-text">⚡ Skip tracks already classified (Speed Boost)</span>
                 </label>
               </div>
 
@@ -164,6 +203,61 @@ Overmono - Good Lies" rows="4"></textarea>
 
       </section>
 
+      <!-- Expandable Library Insights & Vibe Radar Drawer -->
+      <section class="glass-panel insights-panel hidden" id="insightsPanel">
+        <div class="insights-header">
+          <div class="insights-title-group">
+            <span class="insights-icon">📊</span>
+            <div>
+              <h3>Music Library Insights & Vibe Radar</h3>
+              <p class="section-desc">Interactive genre distribution and mood cloud across your collection</p>
+            </div>
+          </div>
+          <button class="modal-close" id="btnCloseInsights" title="Close Insights">&times;</button>
+        </div>
+
+        <div class="insights-body">
+          <!-- Top Genres Distribution Bar -->
+          <div class="insights-col">
+            <div class="col-title">Top Genre Breakdown</div>
+            <div class="genre-dist-bar-wrapper" id="genreDistBarWrapper">
+              <div class="genre-dist-bar" id="genreDistBar"></div>
+            </div>
+            <div class="genre-dist-legend" id="genreDistLegend"></div>
+          </div>
+
+          <!-- Interactive Vibe Cloud -->
+          <div class="insights-col">
+            <div class="col-title">Interactive Vibe Cloud <small style="color: var(--text-muted);">(Click any vibe to filter)</small></div>
+            <div class="vibe-cloud-container" id="vibeCloudContainer">
+              <span class="vibe-cloud-empty">Classify tracks with AI to generate vibe intelligence.</span>
+            </div>
+          </div>
+
+          <!-- Library Health Meter -->
+          <div class="insights-col insights-col-stats">
+            <div class="col-title">Library Health</div>
+            <div class="health-metrics">
+              <div class="health-metric-row">
+                <span>Classification Status</span>
+                <strong id="healthClassifiedRatio">0 / 0</strong>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar-fill health-purple" id="healthClassifiedBar" style="width: 0%;"></div>
+              </div>
+
+              <div class="health-metric-row" style="margin-top: 12px;">
+                <span>YouTube Music Exported</span>
+                <strong id="healthSyncedRatio">0 / 0</strong>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar-fill health-green" id="healthSyncedBar" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Main Curation Studio & Fine-Tuning Area -->
       <section class="glass-panel curation-panel">
         
@@ -172,15 +266,32 @@ Overmono - Good Lies" rows="4"></textarea>
           <div class="toolbar-left">
             <div class="search-box">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input type="text" id="filterSearch" placeholder="Search title, artist, subgenre...">
+              <input type="text" id="filterSearch" placeholder="Search track, artist, subgenre, vibe... [/]">
+              <button id="btnSearchClear" class="search-clear-btn hidden" title="Clear search">&times;</button>
+              <span class="search-shortcut-badge">/</span>
             </div>
 
             <div class="filter-dropdowns">
-              <select id="filterMainGenre">
+              <select id="filterMainGenre" title="Filter by Main Genre">
                 <option value="">All Main Genres</option>
               </select>
-              <select id="filterSubGenre">
+              <select id="filterSubGenre" title="Filter by Sub-genre">
                 <option value="">All Sub-genres</option>
+              </select>
+              <select id="filterStatus" title="Filter by Classification or Sync Status">
+                <option value="">All Statuses</option>
+                <option value="needs_ai">⚡ Needs AI Classification</option>
+                <option value="classified">✓ Classified</option>
+                <option value="synced">🚀 Synced to YT Music</option>
+                <option value="not_synced">⏳ Not Synced</option>
+              </select>
+              <select id="filterSort" title="Sort tracks">
+                <option value="subgenre_asc">Sort: Sub-genre (A-Z)</option>
+                <option value="title_asc">Sort: Title (A-Z)</option>
+                <option value="title_desc">Sort: Title (Z-A)</option>
+                <option value="artist_asc">Sort: Artist (A-Z)</option>
+                <option value="vibe_asc">Sort: Vibe Mood</option>
+                <option value="newest">Sort: Recently Added</option>
               </select>
             </div>
           </div>
@@ -188,26 +299,33 @@ Overmono - Good Lies" rows="4"></textarea>
           <div class="toolbar-right">
             <!-- View toggles & Bulk actions -->
             <div class="view-toggle-group">
-              <button id="btnViewGrid" class="view-btn active" title="Grouped Cards View">
+              <button id="btnViewGrid" class="view-btn active" title="Sub-genre Cards View (G)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span>Sub-genre Groups</span>
+                <span>Cards</span>
               </button>
-              <button id="btnViewTable" class="view-btn" title="Flat Table View">
+              <button id="btnViewTable" class="view-btn" title="Detailed Table View (T)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
                 <span>Table</span>
               </button>
+              <button id="btnViewCompact" class="view-btn" title="Compact Density View (C)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                <span>Compact</span>
+              </button>
             </div>
 
-            <button id="btnOpenMergeModal" class="btn btn-secondary btn-sm" title="Merge 2 sub-genres into one">
-              🔀 Merge Sub-genres
+            <button id="btnSelectAllToolbar" class="btn btn-secondary btn-sm" title="Select / Deselect all visible tracks">
+              <span>☑ Select All</span>
             </button>
-            <button id="btnOpenCustomPlaylistModal" class="btn btn-gradient btn-sm" title="Build a custom playlist based on specific genres or vibes">
+            <button id="btnOpenMergeModal" class="btn btn-secondary btn-sm" title="Merge 2 sub-genres into one (M)">
+              🔀 Merge
+            </button>
+            <button id="btnOpenCustomPlaylistModal" class="btn btn-gradient btn-sm" title="Build a custom playlist based on specific genres or vibes (B)">
               ✨ Custom Playlist
             </button>
           </div>
         </div>
 
-        <!-- Dynamic Studio Content (Cards View or Table View) -->
+        <!-- Dynamic Studio Content (Cards View or Table View or Compact View) -->
         <div id="studioContent" class="studio-content">
           <!-- Populated by JS -->
           <div class="empty-state" id="emptyStatePlaceholder">
@@ -218,6 +336,31 @@ Overmono - Good Lies" rows="4"></textarea>
         </div>
 
       </section>
+
+      <!-- Floating Bulk Action Dock (Appears when 1+ tracks are selected) -->
+      <aside class="batch-action-bar hidden" id="batchActionBar">
+        <div class="batch-left">
+          <span class="batch-badge" id="batchCountBadge">0</span>
+          <span class="batch-label">tracks selected</span>
+        </div>
+        <div class="batch-actions">
+          <button id="btnBatchMove" class="btn btn-sm btn-secondary" title="Move selected tracks to another sub-genre">
+            🔀 Move to Subgenre
+          </button>
+          <button id="btnBatchVibe" class="btn btn-sm btn-secondary" title="Tag selected tracks with custom vibe">
+            🏷️ Tag Vibe
+          </button>
+          <button id="btnBatchSync" class="btn btn-sm btn-yt-action" title="Export only selected tracks to YouTube Music">
+            🚀 Export Selected
+          </button>
+          <button id="btnBatchDelete" class="btn btn-sm btn-outline-danger" title="Remove selected tracks">
+            🗑️ Delete
+          </button>
+          <button id="btnBatchClear" class="btn btn-sm btn-ghost" title="Clear selection (Esc)">
+            ✕ Deselect
+          </button>
+        </div>
+      </aside>
 
       <!-- Bottom Floating Sync Bar -->
       <footer class="sync-footer" id="syncFooter">
@@ -242,30 +385,29 @@ Overmono - Good Lies" rows="4"></textarea>
     <div class="modal-backdrop hidden" id="settingsModal">
       <div class="modal-dialog glass-modal">
         <div class="modal-header">
-          <h3>Settings & API Keys</h3>
+          <h3>⚙️ Settings & API Configuration</h3>
           <button class="modal-close" data-close="settingsModal">&times;</button>
         </div>
         <div class="modal-body">
           
           <!-- Section A: Gemini API Key -->
           <div class="settings-section">
-            <h4>1. Gemini AI Configuration</h4>
-            <p class="section-desc">Used for sub-genre analysis and vibe categorization.</p>
+            <h4>1. Google Gemini AI Engine</h4>
+            <p class="section-desc">Powers granular genre classification, vibe inference, and playlist curation.</p>
             <div class="form-group">
               <label for="inputGeminiKey">Gemini API Key</label>
-              <input type="password" id="inputGeminiKey" placeholder="AIzaSy...">
-              <small class="help-text">Get free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a></small>
+              <input type="password" id="inputGeminiKey" placeholder="Paste AIzaSy... (leave blank to keep current)">
+              <small class="help-text">Get a free instant API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio &rarr;</a></small>
             </div>
             <div class="form-group">
               <label for="selectGeminiModel">AI Model</label>
               <select id="selectGeminiModel">
                 <option value="gemini-3.7-flash">Gemini 3.7 Flash (Recommended &bull; Fast & Smart)</option>
                 <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
-                <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (High Speed)</option>
+                <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (High Speed &bull; Low Latency)</option>
                 <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
                 <option value="gemini-3-flash-preview">Gemini 3 Flash (Preview)</option>
-                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Preview &bull; Deepest Reasoning)</option>
-                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Preview &bull; Deepest Musical Reasoning)</option>
               </select>
             </div>
           </div>
@@ -273,10 +415,10 @@ Overmono - Good Lies" rows="4"></textarea>
           <!-- Section B: YouTube Music Connection -->
           <div class="settings-section">
             <h4>2. YouTube Music Connection</h4>
-            <p class="section-desc">Connect your YT Music account to auto-generate playlists.</p>
+            <p class="section-desc">Allows automatic creation and real-time syncing of playlists directly to your account.</p>
             
             <div class="auth-status-indicator" id="ytAuthIndicator">
-              <span class="auth-status-badge badge-disconnected">Not Connected</span>
+              <span class="auth-status-badge badge-disconnected">&times; Not Connected</span>
             </div>
 
             <div class="form-group">
@@ -284,13 +426,13 @@ Overmono - Good Lies" rows="4"></textarea>
               <textarea id="inputYtHeaders" rows="3" placeholder="Paste Request Headers or Cookie from music.youtube.com network tab..."></textarea>
               <div class="guide-accordion">
                 <details>
-                  <summary>How to get YT Music headers (1 minute setup)</summary>
+                  <summary>How to get YT Music headers (1 minute guide)</summary>
                   <ol class="guide-steps">
                     <li>Buka <a href="https://music.youtube.com" target="_blank" rel="noopener">music.youtube.com</a> di browser dan pastikan login.</li>
                     <li>Buka Developer Tools (tekan <code>F12</code>) lalu klik tab <strong>Network</strong>.</li>
                     <li>Klik sembarang lagu atau playlist di YouTube Music agar ada request jaringan.</li>
                     <li>Cari request bernama <code>browse</code> atau <code>search</code> di daftar network.</li>
-                    <li>Klik kanan request tersebut &rarr; <strong>Copy &rarr; Copy Request Headers</strong> (atau copy nilai <code>Cookie</code> dan <code>Authorization</code>).</li>
+                    <li>Klik kanan request tersebut &rarr; <strong>Copy &rarr; Copy Request Headers</strong> (atau copy isi <code>Cookie</code> dan <code>Authorization</code>).</li>
                     <li>Paste ke dalam kotak teks di atas lalu klik <strong>Connect YouTube Music</strong>.</li>
                   </ol>
                 </details>
@@ -301,7 +443,7 @@ Overmono - Good Lies" rows="4"></textarea>
 
           <!-- Section C: Playlist Preferences -->
           <div class="settings-section">
-            <h4>3. Playlist Naming Prefix</h4>
+            <h4>3. Playlist Preferences</h4>
             <div class="form-group">
               <label for="inputPlaylistPrefix">Prefix for Generated Playlists</label>
               <input type="text" id="inputPlaylistPrefix" value="SoundSort: " placeholder="e.g. SoundSort: or [AI] ">
@@ -324,9 +466,9 @@ Overmono - Good Lies" rows="4"></textarea>
           <button class="modal-close" data-close="mergeModal">&times;</button>
         </div>
         <div class="modal-body">
-          <p class="section-desc">Combine all songs from one sub-genre into another (e.g. merge "Peak Time Techno" into "Tech House").</p>
+          <p class="section-desc">Consolidate all songs from one sub-genre into another (e.g. merge "Peak Time Techno" into "Tech House").</p>
           <div class="form-group">
-            <label for="selectMergeSource">Source Sub-genre (To Be Merged)</label>
+            <label for="selectMergeSource">Source Sub-genre (Will be merged)</label>
             <select id="selectMergeSource"></select>
           </div>
           <div class="form-group">
@@ -342,6 +484,57 @@ Overmono - Good Lies" rows="4"></textarea>
       </div>
     </div>
 
+    <!-- Modal: Batch Move Subgenre -->
+    <div class="modal-backdrop hidden" id="batchMoveModal">
+      <div class="modal-dialog glass-modal">
+        <div class="modal-header">
+          <h3>🔀 Move Selected Songs</h3>
+          <button class="modal-close" data-close="batchMoveModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="section-desc">Change the sub-genre for <strong id="batchMoveCount" style="color: var(--accent-cyan);">0</strong> selected tracks:</p>
+          <div class="form-group">
+            <label for="inputBatchMoveTarget">Target Sub-genre</label>
+            <input type="text" id="inputBatchMoveTarget" placeholder="Type new sub-genre or select from list..." list="batchSubgenresDatalist">
+            <datalist id="batchSubgenresDatalist"></datalist>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close="batchMoveModal">Cancel</button>
+          <button id="btnConfirmBatchMove" class="btn btn-primary">Move Tracks</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Batch Tag Vibe -->
+    <div class="modal-backdrop hidden" id="batchVibeModal">
+      <div class="modal-dialog glass-modal">
+        <div class="modal-header">
+          <h3>🏷️ Tag Selected Songs with Vibe</h3>
+          <button class="modal-close" data-close="batchVibeModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="section-desc">Apply vibe mood tag to <strong id="batchVibeCount" style="color: var(--accent-pink);">0</strong> selected tracks:</p>
+          <div class="form-group">
+            <label for="inputBatchVibeTag">Vibe Tag</label>
+            <input type="text" id="inputBatchVibeTag" placeholder="e.g. Dark Energy, Melodic Chill, High Voltage, Nostalgic, Euphoric...">
+          </div>
+          <div class="vibe-quick-presets">
+            <span class="vibe-preset-chip" data-vibe="High Energy">⚡ High Energy</span>
+            <span class="vibe-preset-chip" data-vibe="Dark Energy">🌙 Dark Energy</span>
+            <span class="vibe-preset-chip" data-vibe="Melodic & Chill">🌊 Melodic Chill</span>
+            <span class="vibe-preset-chip" data-vibe="Atmospheric">🌌 Atmospheric</span>
+            <span class="vibe-preset-chip" data-vibe="Aggressive Bass">🔥 Aggressive Bass</span>
+            <span class="vibe-preset-chip" data-vibe="Nostalgic">📼 Nostalgic</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close="batchVibeModal">Cancel</button>
+          <button id="btnConfirmBatchVibe" class="btn btn-primary">Apply Vibe</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal: Sync to YouTube Music Selection & Progress -->
     <div class="modal-backdrop hidden" id="syncModal">
       <div class="modal-dialog glass-modal modal-lg">
@@ -350,11 +543,12 @@ Overmono - Good Lies" rows="4"></textarea>
           <button class="modal-close" data-close="syncModal">&times;</button>
         </div>
         <div class="modal-body">
-          <p class="section-desc">Choose which sub-genres will be created as playlists in your YouTube Music library:</p>
+          <p class="section-desc">Select which sub-genres will be created as playlists in your YouTube Music library:</p>
           
           <div class="sync-select-toolbar">
             <button id="btnSelectAllSync" class="btn btn-xs btn-ghost">Select All</button>
             <button id="btnDeselectAllSync" class="btn btn-xs btn-ghost">Deselect All</button>
+            <span class="sync-summary-note" id="syncSummaryNote">0 playlists selected</span>
           </div>
 
           <div class="sync-subgenres-list" id="syncSubgenresList">
@@ -389,6 +583,16 @@ Overmono - Good Lies" rows="4"></textarea>
         <div class="modal-body">
           <p class="section-desc">Create a tailored playlist by combining specific genres, subgenres, or vibe moods from your library.</p>
           
+          <!-- Quick Mood Presets -->
+          <div class="mood-presets-bar">
+            <span class="mood-preset-lbl">Quick Presets:</span>
+            <button class="mood-chip" data-title="⚡ High Voltage Workout" data-vibe="High Energy, Aggressive">⚡ Workout Energy</button>
+            <button class="mood-chip" data-title="🌙 Midnight Cyberpunk" data-vibe="Dark, Cyberpunk, Bass">🌙 Midnight Drive</button>
+            <button class="mood-chip" data-title="☕ Acoustic & Warm Chill" data-vibe="Chill, Acoustic, Melodic">☕ Acoustic Chill</button>
+            <button class="mood-chip" data-title="🚗 Synthwave Night Drive" data-vibe="Nostalgic, Synth, Retro">🚗 Retro Synth</button>
+            <button class="mood-chip" data-title="🔥 Peak Club & Rave" data-vibe="Club, Techno, Dance">🔥 Rave Club</button>
+          </div>
+
           <div class="form-group">
             <label for="inputCustomPlaylistTitle">Playlist Title</label>
             <input type="text" id="inputCustomPlaylistTitle" placeholder="e.g. Late Night Cyberpunk, Workout Bass, Rainy Days...">
@@ -415,10 +619,11 @@ Overmono - Good Lies" rows="4"></textarea>
           </div>
 
           <div class="custom-matched-header">
-            <h4>Matched Songs Preview (<span id="customMatchedCount" style="color: var(--accent-cyan);">0</span> songs)</h4>
+            <h4>Matched Songs Preview (<span id="customMatchedCount" style="color: var(--accent-cyan); font-weight: 700;">0</span> songs)</h4>
+            <span class="custom-note">Only matched tracks will be exported</span>
           </div>
 
-          <div class="custom-matched-list" id="customMatchedList" style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 10px;">
+          <div class="custom-matched-list" id="customMatchedList">
             <!-- Live matched songs list -->
           </div>
         </div>
@@ -428,6 +633,70 @@ Overmono - Good Lies" rows="4"></textarea>
             <span class="spinner hidden" id="customPlaylistSpinner"></span>
             <span>🚀 Create & Export to YouTube Music</span>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Edit Track Details -->
+    <div class="modal-backdrop hidden" id="editTrackModal">
+      <div class="modal-dialog glass-modal">
+        <div class="modal-header">
+          <h3>✏️ Edit Track Details</h3>
+          <button class="modal-close" data-close="editTrackModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editTrackId">
+          <div class="form-group">
+            <label>Track & Artist</label>
+            <div id="editTrackDisplay" style="padding: 10px 14px; background: rgba(0, 0, 0, 0.35); border-radius: var(--radius-sm); border: 1px solid var(--border-glass); font-weight: 600; color: #ffffff;"></div>
+          </div>
+          <div class="form-group">
+            <label for="editTrackSubgenre">Sub-genre</label>
+            <input type="text" id="editTrackSubgenre" list="editSubgenresDatalist" placeholder="e.g. UK Garage, Synthwave, Tech House...">
+            <datalist id="editSubgenresDatalist"></datalist>
+          </div>
+          <div class="form-group">
+            <label for="editTrackMainGenre">Main Genre</label>
+            <select id="editTrackMainGenre">
+              <option value="">Uncategorized</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editTrackVibe">Vibe Mood Tag</label>
+            <input type="text" id="editTrackVibe" placeholder="e.g. High Energy, Dark Energy, Melodic Chill...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close="editTrackModal">Cancel</button>
+          <button id="btnSaveTrackEdit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Keyboard Shortcuts Cheat Sheet -->
+    <div class="modal-backdrop hidden" id="shortcutsModal">
+      <div class="modal-dialog glass-modal">
+        <div class="modal-header">
+          <h3>⌨️ Keyboard Shortcuts</h3>
+          <button class="modal-close" data-close="shortcutsModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="shortcuts-grid">
+            <div class="shortcut-row"><kbd>?</kbd> <span>Open this shortcuts cheat sheet</span></div>
+            <div class="shortcut-row"><kbd>/</kbd> <span>Focus track search</span></div>
+            <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> <span>Import tracks / Run AI classification</span></div>
+            <div class="shortcut-row"><kbd>G</kbd> <span>Switch to Sub-genre Cards view</span></div>
+            <div class="shortcut-row"><kbd>T</kbd> <span>Switch to Flat Table view</span></div>
+            <div class="shortcut-row"><kbd>C</kbd> <span>Switch to Compact List view</span></div>
+            <div class="shortcut-row"><kbd>I</kbd> <span>Toggle Library Insights & Vibe Cloud</span></div>
+            <div class="shortcut-row"><kbd>B</kbd> <span>Open Custom Playlist Builder</span></div>
+            <div class="shortcut-row"><kbd>M</kbd> <span>Open Merge Sub-genres Modal</span></div>
+            <div class="shortcut-row"><kbd>S</kbd> <span>Toggle UI Sound Effects</span></div>
+            <div class="shortcut-row"><kbd>Esc</kbd> <span>Close open modals / Clear track selection</span></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-close="shortcutsModal">Got it</button>
         </div>
       </div>
     </div>

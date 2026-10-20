@@ -13,6 +13,14 @@ def main():
     root_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(root_dir)
 
+    # If running with python outside .venv, and .venv exists, delegate to .venv python
+    venv_python = os.path.join(root_dir, ".venv", "Scripts", "python.exe")
+    if os.path.exists(venv_python) and os.path.normcase(sys.executable) != os.path.normcase(venv_python):
+        try:
+            import uvicorn
+        except ImportError:
+            sys.exit(subprocess.call([venv_python] + sys.argv))
+
     # Optional auto-open browser
     def open_browser():
         time.sleep(1.5)

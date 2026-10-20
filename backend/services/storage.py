@@ -118,5 +118,39 @@ def delete_track(track_id: str) -> bool:
         return True
     return False
 
+def batch_delete_tracks(track_ids: List[str]) -> int:
+    tracks = get_all_tracks()
+    target_set = set(track_ids)
+    initial_len = len(tracks)
+    tracks = [t for t in tracks if t.id not in target_set]
+    deleted_count = initial_len - len(tracks)
+    if deleted_count > 0:
+        save_all_tracks(tracks)
+    return deleted_count
+
+def batch_update_tracks(track_ids: List[str], updates: Dict[str, Any]) -> int:
+    tracks = get_all_tracks()
+    target_set = set(track_ids)
+
+    effective_updates = dict(updates)
+    if "sub_genre" in effective_updates and "main_genre" not in effective_updates:
+        target_sub = effective_updates["sub_genre"]
+        for t in tracks:
+            if t.sub_genre == target_sub and t.main_genre and t.main_genre != "Uncategorized":
+                effective_updates["main_genre"] = t.main_genre
+                break
+
+    count = 0
+    for i, t in enumerate(tracks):
+        if t.id in target_set:
+            updated_data = t.model_dump()
+            updated_data.update(effective_updates)
+            tracks[i] = TrackItem(**updated_data)
+            count += 1
+    if count > 0:
+        save_all_tracks(tracks)
+    return count
+
 def clear_all_tracks():
     save_all_tracks([])
+

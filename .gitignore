@@ -8,10 +8,19 @@ env/
 
 # Sensitive Data & Local State (IMPORTANT)
 data/
-backend/data/ytmusic_auth.json
-backend/data/settings.json
+backend/data/
 *.auth.json
+*auth*.json
+*token*.json
+*credentials*.json
 .env
+.env.*
+*.env
+
+# OS generated
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store
 
 # Node / Frontend
 node_modules/

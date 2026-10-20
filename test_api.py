@@ -1,9 +1,27 @@
 import requests
 import time
+import threading
 
 BASE_URL = "http://127.0.0.1:8000"
 
+def ensure_server():
+    try:
+        r = requests.get(f"{BASE_URL}/api/status", timeout=0.8)
+        if r.status_code == 200:
+            return None
+    except Exception:
+        pass
+
+    import uvicorn
+    from backend.main import app
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="warning"))
+    t = threading.Thread(target=server.run, daemon=True)
+    t.start()
+    time.sleep(1.5)
+    return t
+
 def test_api():
+    ensure_server()
     print("[0] Clearing tracks for fresh test...")
     requests.delete(f"{BASE_URL}/api/tracks")
 

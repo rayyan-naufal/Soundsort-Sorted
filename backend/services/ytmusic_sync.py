@@ -49,7 +49,8 @@ class YTMusicSyncService:
             yt = YTMusic(auth_file)
             yt.get_library_playlists(limit=1)
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"is_authenticated check failed: {e}")
             return False
 
     def setup_browser_headers(self, raw_headers_text: str) -> Dict[str, Any]:
@@ -172,10 +173,43 @@ class YTMusicSyncService:
         )
         return playlist_id
 
-    def add_playlist_items(self, playlist_id: str, video_ids: List[str]):
+    def add_playlist_items(self, playlist_id: str, video_ids: List[str], duplicates: bool = True) -> int:
         if not self._ytmusic:
             self._init_client()
-        return self._ytmusic.add_playlist_items(playlistId=playlist_id, videoIds=video_ids, duplicates=False)
+        if not video_ids:
+            return 0
+
+        added_count = 0
+        chunk_size = 50
+        for i in range(0, len(video_ids), chunk_size):
+            chunk = video_ids[i:i + chunk_size]
+            try:
+                res = self._ytmusic.add_playlist_items(playlistId=playlist_id, videoIds=chunk, duplicates=duplicates)
+                if isinstance(res, dict) and "SUCCEEDED" in res.get("status", ""):
+                    added_count += len(chunk)
+                elif isinstance(res, str) and "SUCCEEDED" in res:
+                    added_count += len(chunk)
+                else:
+                    logger.warning(f"Batch add returned non-succeeded status: {res}. Falling back to single-track addition.")
+                    for vid in chunk:
+                        try:
+                            one_res = self._ytmusic.add_playlist_items(playlistId=playlist_id, videoIds=[vid], duplicates=duplicates)
+                            if (isinstance(one_res, dict) and "SUCCEEDED" in one_res.get("status", "")) or \
+                               (isinstance(one_res, str) and "SUCCEEDED" in one_res):
+                                added_count += 1
+                        except Exception as ex:
+                            logger.error(f"Failed to add track {vid}: {ex}")
+            except Exception as e:
+                logger.error(f"Error adding chunk to playlist {playlist_id}: {e}")
+                for vid in chunk:
+                    try:
+                        one_res = self._ytmusic.add_playlist_items(playlistId=playlist_id, videoIds=[vid], duplicates=duplicates)
+                        if (isinstance(one_res, dict) and "SUCCEEDED" in one_res.get("status", "")) or \
+                           (isinstance(one_res, str) and "SUCCEEDED" in one_res):
+                            added_count += 1
+                    except Exception as ex:
+                        logger.error(f"Failed to add single track {vid}: {ex}")
+        return added_count
 
     def sync_subgenre_playlist(
         self, 
@@ -196,39 +230,75 @@ class YTMusicSyncService:
         playlist_id = self.create_or_get_playlist(playlist_title, description)
 
         # 2. Match tracks to video IDs
-        matched_video_ids = []
-        unmatched_tracks = []
+        matched_tracks: List[Tuple[TrackItem, str]] = []
+        unmatched_tracks: List[str] = []
         
         for track in tracks:
             vid_id, matched_title = self.search_best_match(track) or (None, None)
             if vid_id:
                 track.matched_yt_id = vid_id
                 track.matched_yt_title = matched_title
-                track.is_synced = True
-                matched_video_ids.append(vid_id)
+                matched_tracks.append((track, vid_id))
             else:
                 unmatched_tracks.append(f"{track.artist} - {track.title}")
 
-        # 3. Add tracks to playlist in batch
+        # 3. Add tracks to playlist in chunks with duplicates=True
         added_count = 0
-        if matched_video_ids:
+        chunk_size = 50
+        successfully_added_vids = set()
+
+        video_ids = [vid for _, vid in matched_tracks]
+        for i in range(0, len(video_ids), chunk_size):
+            chunk = video_ids[i:i + chunk_size]
             try:
-                # ytmusicapi add_playlist_items takes list of videoIds
-                self._ytmusic.add_playlist_items(
+                res = self._ytmusic.add_playlist_items(
                     playlistId=playlist_id,
-                    videoIds=matched_video_ids,
-                    duplicates=False
+                    videoIds=chunk,
+                    duplicates=True
                 )
-                added_count = len(matched_video_ids)
+                if isinstance(res, dict) and "SUCCEEDED" in res.get("status", ""):
+                    added_count += len(chunk)
+                    successfully_added_vids.update(chunk)
+                elif isinstance(res, str) and "SUCCEEDED" in res:
+                    added_count += len(chunk)
+                    successfully_added_vids.update(chunk)
+                else:
+                    logger.warning(f"Batch add returned non-succeeded status: {res}. Falling back to single-track addition.")
+                    for vid in chunk:
+                        try:
+                            one_res = self._ytmusic.add_playlist_items(
+                                playlistId=playlist_id,
+                                videoIds=[vid],
+                                duplicates=True
+                            )
+                            if (isinstance(one_res, dict) and "SUCCEEDED" in one_res.get("status", "")) or \
+                               (isinstance(one_res, str) and "SUCCEEDED" in one_res):
+                                added_count += 1
+                                successfully_added_vids.add(vid)
+                        except Exception as ex:
+                            logger.error(f"Failed to add track {vid}: {ex}")
             except Exception as e:
-                logger.error(f"Failed to add tracks to playlist {playlist_id}: {e}")
-                # Fallback: add one by one
-                for vid in matched_video_ids:
+                logger.error(f"Failed adding chunk {i} to playlist {playlist_id}: {e}")
+                for vid in chunk:
                     try:
-                        self._ytmusic.add_playlist_items(playlistId=playlist_id, videoIds=[vid], duplicates=False)
-                        added_count += 1
-                    except Exception:
-                        pass
+                        one_res = self._ytmusic.add_playlist_items(
+                            playlistId=playlist_id,
+                            videoIds=[vid],
+                            duplicates=True
+                        )
+                        if (isinstance(one_res, dict) and "SUCCEEDED" in one_res.get("status", "")) or \
+                           (isinstance(one_res, str) and "SUCCEEDED" in one_res):
+                            added_count += 1
+                            successfully_added_vids.add(vid)
+                    except Exception as ex:
+                        logger.error(f"Failed to add track {vid}: {ex}")
+
+        # 4. Mark is_synced accurately
+        for track, vid in matched_tracks:
+            if vid in successfully_added_vids:
+                track.is_synced = True
+            else:
+                track.is_synced = False
 
         playlist_url = f"https://music.youtube.com/playlist?list={playlist_id}"
         return {

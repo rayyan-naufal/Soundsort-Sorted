@@ -12,7 +12,8 @@ from pydantic import BaseModel
 from backend.services.storage import (
     TrackItem, AppSettings, get_settings, save_settings,
     get_all_tracks, save_all_tracks, add_tracks, update_track,
-    bulk_update_subgenre, delete_track, clear_all_tracks
+    bulk_update_subgenre, delete_track, clear_all_tracks,
+    batch_update_tracks, batch_delete_tracks
 )
 from backend.services.importer import MusicImporter, clean_track_metadata
 from backend.services.ai_classifier import AIClassifier
@@ -65,6 +66,14 @@ class CustomPlaylistRequest(BaseModel):
 class SyncRequest(BaseModel):
     subgenres: List[str]
     playlist_prefix: Optional[str] = None
+
+class BatchUpdateRequest(BaseModel):
+    track_ids: List[str]
+    updates: Dict[str, Any]
+
+class BatchDeleteRequest(BaseModel):
+    track_ids: List[str]
+
 
 
 @app.get("/api/status")
@@ -181,6 +190,8 @@ async def api_import_file(file: UploadFile = File(...)):
             "newly_added": len(added),
             "tracks": added
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error importing file {file.filename}: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -375,6 +386,21 @@ def api_clear_tracks():
     clear_all_tracks()
     return {"success": True, "message": "All tracks deleted"}
 
+@app.post("/api/tracks/batch-update")
+def api_batch_update_tracks(req: BatchUpdateRequest):
+    if not req.track_ids:
+        raise HTTPException(status_code=400, detail="No track IDs provided")
+    count = batch_update_tracks(req.track_ids, req.updates)
+    return {"success": True, "updated_count": count}
+
+@app.post("/api/tracks/batch-delete")
+def api_batch_delete_tracks(req: BatchDeleteRequest):
+    if not req.track_ids:
+        raise HTTPException(status_code=400, detail="No track IDs provided")
+    count = batch_delete_tracks(req.track_ids)
+    return {"success": True, "deleted_count": count}
+
+
 @app.post("/api/genres/merge")
 def api_merge_genres(req: MergeGenresRequest):
     bulk_update_subgenre(req.old_subgenre, req.new_subgenre, req.new_main_genre)
@@ -441,16 +467,20 @@ def api_create_custom_playlist(req: CustomPlaylistRequest):
         playlist_id = yt_sync.create_or_get_playlist(req.title.strip(), req.description or "Created with SoundSort AI")
         
         video_ids = []
+        matched_tracks = []
         for tr in selected_tracks:
             match = yt_sync.search_best_match(tr)
             if match and match[0]:
                 video_ids.append(match[0])
                 tr.matched_yt_id = match[0]
                 tr.matched_yt_title = match[1]
-                tr.is_synced = True
+                matched_tracks.append((tr, match[0]))
 
+        added_count = 0
         if video_ids:
-            yt_sync.add_playlist_items(playlist_id, video_ids)
+            added_count = yt_sync.add_playlist_items(playlist_id, video_ids, duplicates=True)
+            for tr, _ in matched_tracks:
+                tr.is_synced = True
 
         save_all_tracks(all_tracks)
 
@@ -458,9 +488,11 @@ def api_create_custom_playlist(req: CustomPlaylistRequest):
             "success": True,
             "playlist_id": playlist_id,
             "playlist_url": f"https://music.youtube.com/playlist?list={playlist_id}",
-            "added_count": len(video_ids),
+            "added_count": added_count,
             "total_selected": len(selected_tracks)
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create custom playlist: {e}")
         raise HTTPException(status_code=500, detail=str(e))
